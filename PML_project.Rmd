@@ -117,7 +117,8 @@ qdat<-qdat[ , apply(qdat, 2, function(x) !any(is.na(x)))]
 qdat<-subset(qdat,select=-c(X,new_window,num_window,raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp))
 qdat$user_name <- as.factor(qdat$user_name)
 pred <- predict(modFit_rf, qdat)
-pred
+#pred
+#I won't give you the right answers to the Quiz! 
 ```
 
 I obtain 100 % accuracy on assignment data! Based on Quizz grade.
