@@ -118,7 +118,7 @@ pred <- predict(modFit_rf, qdat)
 #I won't give you the right answers to the Quiz! Just uncomment!
 ```
 
-I obtain 100 % accuracy on the assignment data! Based on Quizz grade.
+I obtain 100% accuracy on the assignment data! Based on Quizz grade.
 
 ![Quizz Figure](Prediction_Quizz.jpg)
 
