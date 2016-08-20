@@ -1,12 +1,9 @@
 ---
 title: "Johns Hopkins University PML Project"
 author: "Antonio I. M. Guerreiro"
-date: "August 17, 2016"
+date: "August 20, 2016"
 output: html_document
 ---
-```{r}
-
-```
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -14,9 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Objective
 
-The goal of the project is to predict the manner in which people did the barbell lift exercise.  
-For additional information please see:  
-http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).  
+The goal of the project is to predict the manner in which people did barbell lift exercises.  
+Additional information should have been available at http://groupware.les.inf.puc-rio.br/har  
+but this site related to Human Activity Recognition seems down now.  
 Training data from:  
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv  
 Quizz data from:   
@@ -38,7 +35,7 @@ library(doMC)
 
 This is my way to get a tidy data set:
 
-* remove all empty or with NAs columns
+* remove all these empty or with NAs columns,
 * keep only movement related columns plus "user_name" and "classe".
 
 ```{r include=TRUE}
@@ -65,7 +62,7 @@ inTrain <- createDataPartition(y = pdat$classe, p = 0.7, list = FALSE)
 train_data <- pdat[inTrain,]; test_data <- pdat[-inTrain,]
 ```
 
-## Fitting first with the caret "rpart" method 
+## Trying first the caret "rpart" method 
 
 "classe" is a factor with 5 levels so I try first a quick recursive partitioning method for classification.  
 I include all features. It uses random sampling with replacement (bootstrap).  
@@ -76,7 +73,7 @@ modFit_rpart <- train(classe ~ ., data = train_data, method = "rpart")
 modFit_rpart
 ```
 
-The accuracy is very low even on the training part of the data set!
+The performance is very low even on the training part of the data set!
 What about performance on the test set?
 
 ```{r include=TRUE}
@@ -86,14 +83,14 @@ confusionMatrix(pred, test_data$classe)
 
 ## Fitting a random forest model using all the features of the training tidy data set
 
-So let's try a more powerfull method: random forests.
-I use 5 cores on a mac pro with 20GB RAM.  
+So I have to try a more powerfull method: random forests.
+I use 5 cores on a 2.26 GHz old mac pro with 20 GB RAM.  
 
 ```{r include=TRUE}
 registerDoMC(cores = 5)
 ```
 
-I use the defaults for the method, so it's a random sampling with replacement (bootstrap), and all features.
+I use the defaults for the method, so it's a random sampling with replacement (bootstrap), and all features. It takes around 20 min to complete.
 
 ```{r include=TRUE, message=FALSE, warning=FALSE}
 modFit_rf <- train(classe ~ ., data = train_data, method = "rf")
@@ -107,9 +104,9 @@ pred <- predict(modFit_rf, test_data)
 confusionMatrix(pred, test_data$classe)
 ```
 
-It seems rather good! So I have applied this model to the Prediction Quiz 20 test cases. 
+It seems rather good! So I have applied this model to the Prediction Quizz 20 test cases. 
 
-## Predicting on assignment data
+## Predicting on Quizz data
 
 ```{r include=TRUE}
 qdat<-read.csv("pml-testing.csv", stringsAsFactors=FALSE, na.strings=c("","NA"))
@@ -118,10 +115,10 @@ qdat<-subset(qdat,select=-c(X,new_window,num_window,raw_timestamp_part_1,raw_tim
 qdat$user_name <- as.factor(qdat$user_name)
 pred <- predict(modFit_rf, qdat)
 #pred
-#I won't give you the right answers to the Quiz! 
+#I won't give you the right answers to the Quiz! Just uncomment!
 ```
 
-I obtain 100 % accuracy on assignment data! Based on Quizz grade.
+I obtain 100 % accuracy on the assignment data! Based on Quizz grade.
 
 ![Quizz Figure](Prediction_Quizz.jpg)
 

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Antonio I. M. Guerreiro" />
 
-<meta name="date" content="2016-08-17" />
+<meta name="date" content="2016-08-20" />
 
 <title>Johns Hopkins University PML Project</title>
 
@@ -118,16 +118,16 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Johns Hopkins University PML Project</h1>
 <h4 class="author"><em>Antonio I. M. Guerreiro</em></h4>
-<h4 class="date"><em>August 17, 2016</em></h4>
+<h4 class="date"><em>August 20, 2016</em></h4>
 
 </div>
 
 
 <div id="objective" class="section level2">
 <h2>Objective</h2>
-<p>The goal of the project is to predict the manner in which people did the barbell lift exercise.<br />
-For additional information please see:<br />
-<a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a> (see the section on the Weight Lifting Exercise Dataset).<br />
+<p>The goal of the project is to predict the manner in which people did barbell lift exercises.<br />
+Additional information should have been available at <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a><br />
+but this site related to Human Activity Recognition seems down now.<br />
 Training data from:<br />
 <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv" class="uri">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a><br />
 Quizz data from:<br />
@@ -145,7 +145,7 @@ library(doMC)</code></pre>
 <h2>Preparing a tidy data set</h2>
 <p>This is my way to get a tidy data set:</p>
 <ul>
-<li>remove all empty or with NAs columns</li>
+<li>remove all these empty or with NAs columns,</li>
 <li>keep only movement related columns plus “user_name” and “classe”.</li>
 </ul>
 <pre class="r"><code>pdat&lt;-read.csv(&quot;pml-training.csv&quot;, stringsAsFactors=FALSE, na.strings=c(&quot;&quot;,&quot;NA&quot;))
@@ -165,8 +165,8 @@ pdat$user_name &lt;- as.factor(pdat$user_name); pdat$classe &lt;- as.factor(pdat
 <pre class="r"><code>inTrain &lt;- createDataPartition(y = pdat$classe, p = 0.7, list = FALSE)
 train_data &lt;- pdat[inTrain,]; test_data &lt;- pdat[-inTrain,]</code></pre>
 </div>
-<div id="fitting-first-with-the-caret-rpart-method" class="section level2">
-<h2>Fitting first with the caret “rpart” method</h2>
+<div id="trying-first-the-caret-rpart-method" class="section level2">
+<h2>Trying first the caret “rpart” method</h2>
 <p>“classe” is a factor with 5 levels so I try first a quick recursive partitioning method for classification.<br />
 I include all features. It uses random sampling with replacement (bootstrap).<br />
 Try no preprocessing as it’s not a linear model.</p>
@@ -184,52 +184,52 @@ modFit_rpart</code></pre>
 ## Resampling results across tuning parameters:
 ## 
 ##   cp          Accuracy   Kappa     
-##   0.03631370  0.5094201  0.35907343
-##   0.06018377  0.4163477  0.20960001
-##   0.11443393  0.3255455  0.06327751
+##   0.03631370  0.5145176  0.37147650
+##   0.04036212  0.4870656  0.32734016
+##   0.11789238  0.3240993  0.06132664
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was cp = 0.0363137.</code></pre>
-<p>The accuracy is very low even on the training part of the data set! What about performance on the test set?</p>
+<p>The performance is very low even on the training part of the data set! What about performance on the test set?</p>
 <pre class="r"><code>pred &lt;- predict(modFit_rpart, test_data)
 confusionMatrix(pred, test_data$classe)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
-## Prediction    A    B    C    D    E
-##          A 1523  468  484  418  165
-##          B   22  382   27  180  132
-##          C  127  289  515  366  291
-##          D    0    0    0    0    0
-##          E    2    0    0    0  494
+## Prediction   A   B   C   D   E
+##          A 977 165  27  50   5
+##          B   2 216  26   7   7
+##          C 515 487 595 292 395
+##          D 154 271 378 615 183
+##          E  26   0   0   0 492
 ## 
 ## Overall Statistics
-##                                          
-##                Accuracy : 0.4952         
-##                  95% CI : (0.4823, 0.508)
-##     No Information Rate : 0.2845         
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16      
-##                                          
-##                   Kappa : 0.3403         
-##  Mcnemar's Test P-Value : NA             
+##                                           
+##                Accuracy : 0.4919          
+##                  95% CI : (0.4791, 0.5048)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.368           
+##  Mcnemar's Test P-Value : &lt; 2.2e-16       
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9098  0.33538  0.50195   0.0000  0.45656
-## Specificity            0.6355  0.92394  0.77917   1.0000  0.99958
-## Pos Pred Value         0.4980  0.51413  0.32431      NaN  0.99597
-## Neg Pred Value         0.9466  0.85278  0.88108   0.8362  0.89089
-## Prevalence             0.2845  0.19354  0.17434   0.1638  0.18386
-## Detection Rate         0.2588  0.06491  0.08751   0.0000  0.08394
-## Detection Prevalence   0.5196  0.12625  0.26984   0.0000  0.08428
-## Balanced Accuracy      0.7726  0.62966  0.64056   0.5000  0.72807</code></pre>
+## Sensitivity            0.5836  0.18964   0.5799   0.6380  0.45471
+## Specificity            0.9413  0.99115   0.6524   0.7996  0.99459
+## Pos Pred Value         0.7982  0.83721   0.2605   0.3841  0.94981
+## Neg Pred Value         0.8505  0.83597   0.8803   0.9185  0.89007
+## Prevalence             0.2845  0.19354   0.1743   0.1638  0.18386
+## Detection Rate         0.1660  0.03670   0.1011   0.1045  0.08360
+## Detection Prevalence   0.2080  0.04384   0.3881   0.2720  0.08802
+## Balanced Accuracy      0.7625  0.59040   0.6162   0.7188  0.72465</code></pre>
 </div>
 <div id="fitting-a-random-forest-model-using-all-the-features-of-the-training-tidy-data-set" class="section level2">
 <h2>Fitting a random forest model using all the features of the training tidy data set</h2>
-<p>So let’s try a more powerfull method: random forests. I use 5 cores on a mac pro with 20GB RAM.</p>
+<p>So I have to try a more powerfull method: random forests. I use 5 cores on a 2.26 GHz old mac pro with 20 GB RAM.</p>
 <pre class="r"><code>registerDoMC(cores = 5)</code></pre>
-<p>I use the defaults for the method, so it’s a random sampling with replacement (bootstrap), and all features.</p>
+<p>I use the defaults for the method, so it’s a random sampling with replacement (bootstrap), and all features. It takes around 20 min to complete.</p>
 <pre class="r"><code>modFit_rf &lt;- train(classe ~ ., data = train_data, method = &quot;rf&quot;)
 modFit_rf</code></pre>
 <pre><code>## Random Forest 
@@ -244,9 +244,9 @@ modFit_rf</code></pre>
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9870207  0.9835782
-##   29    0.9882144  0.9850898
-##   57    0.9794281  0.9739735
+##    2    0.9882535  0.9851382
+##   29    0.9890441  0.9861385
+##   57    0.9808596  0.9757803
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 29.</code></pre>
@@ -259,45 +259,45 @@ confusionMatrix(pred, test_data$classe)</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1671    5    0    0    0
-##          B    2 1129    5    0    1
-##          C    1    5 1015    9    2
-##          D    0    0    6  955    2
-##          E    0    0    0    0 1077
+##          A 1671   10    0    0    0
+##          B    3 1126    3    0    0
+##          C    0    3 1021    7    2
+##          D    0    0    2  957    2
+##          E    0    0    0    0 1078
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9935          
-##                  95% CI : (0.9911, 0.9954)
+##                Accuracy : 0.9946          
+##                  95% CI : (0.9923, 0.9963)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9918          
+##                   Kappa : 0.9931          
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9982   0.9912   0.9893   0.9907   0.9954
-## Specificity            0.9988   0.9983   0.9965   0.9984   1.0000
-## Pos Pred Value         0.9970   0.9930   0.9835   0.9917   1.0000
-## Neg Pred Value         0.9993   0.9979   0.9977   0.9982   0.9990
+## Sensitivity            0.9982   0.9886   0.9951   0.9927   0.9963
+## Specificity            0.9976   0.9987   0.9975   0.9992   1.0000
+## Pos Pred Value         0.9941   0.9947   0.9884   0.9958   1.0000
+## Neg Pred Value         0.9993   0.9973   0.9990   0.9986   0.9992
 ## Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
-## Detection Rate         0.2839   0.1918   0.1725   0.1623   0.1830
-## Detection Prevalence   0.2848   0.1932   0.1754   0.1636   0.1830
-## Balanced Accuracy      0.9985   0.9948   0.9929   0.9945   0.9977</code></pre>
-<p>It seems rather good! So I have applied this model to the Prediction Quiz 20 test cases.</p>
+## Detection Rate         0.2839   0.1913   0.1735   0.1626   0.1832
+## Detection Prevalence   0.2856   0.1924   0.1755   0.1633   0.1832
+## Balanced Accuracy      0.9979   0.9937   0.9963   0.9960   0.9982</code></pre>
+<p>It seems rather good! So I have applied this model to the Prediction Quizz 20 test cases.</p>
 </div>
-<div id="predicting-on-assignment-data" class="section level2">
-<h2>Predicting on assignment data</h2>
+<div id="predicting-on-quizz-data" class="section level2">
+<h2>Predicting on Quizz data</h2>
 <pre class="r"><code>qdat&lt;-read.csv(&quot;pml-testing.csv&quot;, stringsAsFactors=FALSE, na.strings=c(&quot;&quot;,&quot;NA&quot;))
 qdat&lt;-qdat[ , apply(qdat, 2, function(x) !any(is.na(x)))]
 qdat&lt;-subset(qdat,select=-c(X,new_window,num_window,raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp))
 qdat$user_name &lt;- as.factor(qdat$user_name)
 pred &lt;- predict(modFit_rf, qdat)
 #pred
-#I won't give you the right answers to the Quiz! </code></pre>
-<p>I obtain 100 % accuracy on assignment data! Based on Quizz grade.</p>
+#I won't give you the right answers to the Quiz! Just uncomment!</code></pre>
+<p>I obtain 100 % accuracy on the assignment data! Based on Quizz grade.</p>
 <div class="figure">
 <img src="data:image/jpeg;base64,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R/Ymr/8AQKvv/AZ/8KLMj2NT+V/cUKKv/wBiav8A9Aq+/wDAZ/8ACj+xNX/6BV9/4DP/AIUWYexqfyv7ihRV/wDsTV/+gVff+Az/AOFH9iav/wBAq+/8Bn/wosw9jU/lf3FCir/9iav/ANAq+/8AAZ/8KP7E1f8A6BV9/wCAz/4UWYexqfyv7i34Tlki8TWOxyu+Ta2D1GOlew15V4X0TU18RWksthcwxxPvZ5YmQAfiK9VrWGx9BlMZRpNSVtQoooqz1QooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAopskixRPI5wqKWP0Fc1/wsDw//AM95v+/Df4VpTo1KnwRbInUhD4nY6eiuY/4T/wAP/wDPeb/vw3+FH/Cf+H/+e83/AH4b/CtPqmI/kf3EfWKX8yOnormP+E/8P/8APeb/AL8N/hR/wn/h/wD57zf9+G/wo+qYj+R/cH1il/Mjp6K5j/hP/D//AD3m/wC/Df4Uf8J/4f8A+e83/fhv8KPqmI/kf3B9YpfzI6eiuY/4T/w//wA95v8Avw3+FH/Cf+H/APnvN/34b/Cj6piP5H9wfWKX8yOnormP+E/8P/8APeb/AL8N/hXQWV5DqFlFd27FoZV3ISMEj6VFShUpq84tFxqwm7RdyeiiisiwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigCvf8A/INuv+uL/wAjXgQb5R9K99v/APkG3X/XF/5Gvn0NwK97Jfhn8v1PKzHePzJd1G6o91OQGR1RerEAV7lzzR26jdWjf6BfWCbn8qX975LCF95V/wC6QOhqBdI1J/PxY3AMCh5FMZBUH2rNVoNXTLcJp2aKu6jdVq30q8nntY2gliW5dUjkkQhST0571GNPvGlEcdrPIWJ2bIyd2OuPWn7SPcXLLsQ7qN1NcNG7I6srKcFWGCDTd1Vckk3V7Z4S/wCRU03/AK4ivD91e3+Ev+RT0z/rgK8jOf4UfU9DLv4j9Daooor509cKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAr3/8AyDbr/ri/8jXzyG4FfQ1//wAg26/64v8AyNfOm7ivdyf4Z/I8rMt4/Ml3VJDKI543OcKwJx9ar7qN1eyeZc7hvGdrLfpcSQTbYbtpY1VFG5GGPmGfvDsefrUNz4ms7lLm3eW4WGS3EaPFAEKkNuxjd07ZzXG7qN1cywlJbG/1mZ27+KdJiitYraC5EcVzDNtKDIVOozuJJ/Kki8W2BvJJ3hljM1uIWURhkjIbIKjcOCOo9fWuJ3UbqPqlMPrEzR1a/Go6pPdAkiRsglApPHoCcfnVLdUe6jdXRFKKSRjKTk7sk3V7p4R/5FLTP+uArwfdXu/hD/kUdL/64CvKzf8AhR9Tvy7+I/Q26KKK+fPYCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAIrmIz2s0SkAujKCfcYryv/hVWrf8/wDZfm3+Fes0V0UMVUoXUOpjVw8KtufoeTf8Kq1b/n/svzb/AAo/4VVq3/P/AGX5t/hXrNFdH9p4jv8AgY/UKPY8m/4VVq3/AD/2X5t/hR/wqrVv+f8Asvzb/CvWaKP7TxHf8A+oUex5N/wqrVv+f+y/Nv8ACj/hVWrf8/8AZfm3+Fes0Uf2niO/4B9Qo9jyb/hVWrf8/wDZfm3+FH/CqtW/5/7L82/wr1mij+08R3/APqFHseTf8Kq1b/n/ALL82/wr0nQ7CTS9Ds7GV1eSCMIzL0J9q0KKwr4urXSjNmtLDU6TvEKKKK5jcKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z" alt="Quizz Figure" />
 <p class="caption">Quizz Figure</p>
@@ -317,25 +317,25 @@ rfImp</code></pre>
 ## 
 ##                      Overall
 ## roll_belt             100.00
-## pitch_forearm          59.60
-## yaw_belt               53.90
-## pitch_belt             46.04
-## magnet_dumbbell_y      44.71
-## roll_forearm           44.23
-## magnet_dumbbell_z      42.97
-## accel_dumbbell_y       21.94
-## accel_forearm_x        19.17
-## magnet_dumbbell_x      18.40
-## roll_dumbbell          18.03
-## magnet_belt_z          17.54
-## accel_dumbbell_z       14.98
-## total_accel_dumbbell   14.60
-## accel_belt_z           14.44
-## magnet_forearm_z       13.48
-## magnet_belt_y          12.94
-## gyros_belt_z           12.09
-## magnet_belt_x          11.78
-## yaw_arm                10.96</code></pre>
+## pitch_forearm          64.26
+## yaw_belt               61.08
+## pitch_belt             48.54
+## magnet_dumbbell_y      45.97
+## magnet_dumbbell_z      45.57
+## roll_forearm           45.55
+## accel_dumbbell_y       25.09
+## accel_forearm_x        21.32
+## roll_dumbbell          19.70
+## magnet_dumbbell_x      19.43
+## accel_belt_z           18.45
+## magnet_belt_z          16.76
+## accel_dumbbell_z       15.75
+## magnet_forearm_z       15.18
+## total_accel_dumbbell   14.88
+## magnet_belt_y          14.64
+## gyros_belt_z           13.10
+## yaw_arm                12.96
+## magnet_belt_x          11.64</code></pre>
 </div>
 
 
